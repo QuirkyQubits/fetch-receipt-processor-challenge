@@ -16,6 +16,6 @@ def get_random_hexadecimal_id() -> str:
     return '-'.join([hex(randint_1)[2:], hex(randint_2)[2:], hex(randint_3)[2:], hex(randint_4)[2:], hex(randint_5)[2:]])
 
 
-def index(request):
+def get_id_for_receipt(request):
     a_dict = {'id': get_random_hexadecimal_id()}
     return JsonResponse(a_dict)
