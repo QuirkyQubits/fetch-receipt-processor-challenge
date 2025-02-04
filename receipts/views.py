@@ -1,4 +1,7 @@
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import render
+from .forms import NameForm
+
 import random
 
 '''
@@ -17,5 +20,32 @@ def get_random_hexadecimal_id() -> str:
 
 
 def get_id_for_receipt(request):
-    a_dict = {'id': get_random_hexadecimal_id()}
-    return JsonResponse(a_dict)
+    if request.method == "POST":
+        # print(f"Receipt json string received: {receipt_json_str}")
+        a_dict = {'id': get_random_hexadecimal_id()}
+        return JsonResponse(a_dict)
+    else:
+        return HttpResponse("Invalid request method, this can only take POST")
+
+
+
+def get_receipt(request):
+    # if this is a POST request we need to process the form data
+    if request.method == "POST":
+        # create a form instance and populate it with data from the request:
+        form = NameForm(request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            # process the data in form.cleaned_data as required
+            # ...
+            # redirect to a new URL:
+
+            print("POST request and Form is valid!")
+
+            return HttpResponseRedirect("/receipts/results") # passing in some id
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = NameForm()
+
+    return render(request, "receipts/upload_receipt_and_get_id.html", {"form": form})
