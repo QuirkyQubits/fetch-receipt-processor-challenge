@@ -28,7 +28,6 @@ def get_id_for_receipt(request):
         return HttpResponse("Invalid request method, this can only take POST")
 
 
-
 def get_receipt(request):
     # if this is a POST request we need to process the form data
     if request.method == "POST":
