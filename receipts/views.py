@@ -49,3 +49,12 @@ def get_receipt(request):
         form = NameForm()
 
     return render(request, "receipts/upload_receipt_and_get_id.html", {"form": form})
+
+
+def points(request, receipt_id: str) -> JsonResponse:
+    if request.method == "GET":
+        print(f"Receipt json string received: {receipt_id}")
+        a_dict = {'points': 32}
+        return JsonResponse(a_dict)
+    else:
+        return HttpResponse("Invalid request method, this can only take GET")
