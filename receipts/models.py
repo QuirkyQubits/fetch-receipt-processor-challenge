@@ -49,7 +49,7 @@ class Receipt(models.Model):
         print(f"Total points after if purchaseDate is odd: {total_points}")
 
         # 10 points if the time of purchase is after 2:00pm and before 4:00pm.
-        if self.purchaseTime.hour > 14 and self.purchaseTime.hour < 16:
+        if self.purchaseTime.hour >= 14 and self.purchaseTime.hour < 16:
             total_points += 10
         print(f"Total points after if time of purchase is between 2 and 4 PM: {total_points}")
 
