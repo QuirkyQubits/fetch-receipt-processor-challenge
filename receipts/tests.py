@@ -7,6 +7,10 @@ from django.urls import reverse
 
 from .models import Receipt
 
+
+INVALID_RECEIPT_BAD_REQUEST_STR = "The receipt is invalid."
+ID_NOT_FOUND_STR = "No receipt found for that ID."
+
 def create_receipt_with_day_offset(days: int):
     """
     Create a receipt with the given `question_text` and published the
@@ -64,6 +68,7 @@ class ReceiptViewTests(TestCase):
         response = self.client.post(url, post_dict)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "\"id\":")
+        self.assertNotContains(response, INVALID_RECEIPT_BAD_REQUEST_STR, status_code=200)
         
 
     def test_sending_receipts_with_negative_price_items_to_receipt_process_view_is_fine(self):
@@ -90,6 +95,7 @@ class ReceiptViewTests(TestCase):
         response = self.client.post(url, post_dict)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "\"id\":")
+        self.assertNotContains(response, INVALID_RECEIPT_BAD_REQUEST_STR, status_code=200)
     
 
     def test_sending_malformed_string_to_receipt_process_view_throws_error(self):
@@ -108,6 +114,7 @@ class ReceiptViewTests(TestCase):
         response = self.client.post(url, post_dict)
         self.assertEqual(response.status_code, 400)
         self.assertNotContains(response, text="\"id\":", status_code=400)
+        self.assertContains(response, INVALID_RECEIPT_BAD_REQUEST_STR, status_code=400)
     
 
     def test_sending_empty_string_to_receipt_process_view_throws_error(self):
@@ -122,6 +129,7 @@ class ReceiptViewTests(TestCase):
         response = self.client.post(url, post_dict)
         self.assertEqual(response.status_code, 400)
         self.assertNotContains(response, text="\"id\":", status_code=400)
+        self.assertContains(response, INVALID_RECEIPT_BAD_REQUEST_STR, status_code=400)
     
 
     def test_sending_receipts_with_no_items_to_receipt_process_view_is_fine(self):
@@ -170,6 +178,7 @@ class ReceiptViewTests(TestCase):
         response = self.client.post(url, post_dict)
         self.assertEqual(response.status_code, 400)
         self.assertNotContains(response, text="\"id\":", status_code=400)
+        self.assertContains(response, INVALID_RECEIPT_BAD_REQUEST_STR, status_code=400)
     
 
     def test_sending_json_with_extra_kvps_to_receipt_process_view_is_fine(self):
@@ -223,6 +232,7 @@ class ReceiptViewTests(TestCase):
         response = self.client.post(url, post_dict)
         self.assertEqual(response.status_code, 400)
         self.assertNotContains(response, text="\"id\":", status_code=400)
+        self.assertContains(response, INVALID_RECEIPT_BAD_REQUEST_STR, status_code=400)
 
 
     def test_sending_json_with_incorrectly_formatted_date_to_receipt_process_view_throws_error(self):
@@ -248,6 +258,7 @@ class ReceiptViewTests(TestCase):
         response = self.client.post(url, post_dict)
         self.assertEqual(response.status_code, 400)
         self.assertNotContains(response, text="\"id\":", status_code=400)
+        self.assertContains(response, INVALID_RECEIPT_BAD_REQUEST_STR, status_code=400)
     
 
     def test_sending_json_with_blank_retailer_to_receipt_process_view_is_fine(self):
@@ -307,6 +318,7 @@ class ReceiptViewTests(TestCase):
         url = reverse("receipts:points", args=('id-that-does-not-exist',))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
+        self.assertContains(response, ID_NOT_FOUND_STR, status_code=404)
 
 
     def test_points_api_with_post_throws_error(self):
@@ -344,6 +356,7 @@ class ReceiptViewTests(TestCase):
         url = reverse("receipts:points", args=('id-that-does-not-exist',))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
+        self.assertContains(response, ID_NOT_FOUND_STR, status_code=404)
 
         json_string = '''
         {
@@ -369,6 +382,7 @@ class ReceiptViewTests(TestCase):
         url = reverse("receipts:points", args=(hex_id,))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, ID_NOT_FOUND_STR, status_code=200)
         the_json = json.loads(response.content.decode("utf-8"))
         self.assertEqual(the_json['points'], 15)
     
@@ -403,12 +417,14 @@ class ReceiptViewTests(TestCase):
         url = reverse("receipts:get_id_for_receipt")
         post_dict = {'receipt_json_str': json_string}
         response = self.client.post(url, post_dict)
+        self.assertNotContains(response, INVALID_RECEIPT_BAD_REQUEST_STR, status_code=200)
         the_json = json.loads(response.content.decode("utf-8"))
         hex_id = the_json['id']
         
         url = reverse("receipts:points", args=(hex_id,))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, ID_NOT_FOUND_STR, status_code=200)
         the_json = json.loads(response.content.decode("utf-8"))
         self.assertEqual(the_json['points'], 28)
 
@@ -438,11 +454,13 @@ class ReceiptViewTests(TestCase):
         url = reverse("receipts:get_id_for_receipt")
         post_dict = {'receipt_json_str': json_string}
         response = self.client.post(url, post_dict)
+        self.assertNotContains(response, INVALID_RECEIPT_BAD_REQUEST_STR, status_code=200)
         the_json = json.loads(response.content.decode("utf-8"))
         hex_id = the_json['id']
         
         url = reverse("receipts:points", args=(hex_id,))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, ID_NOT_FOUND_STR, status_code=200)
         the_json = json.loads(response.content.decode("utf-8"))
         self.assertEqual(the_json['points'], 109)

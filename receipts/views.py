@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse, Http404
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import get_object_or_404, render
 
 from .models import Receipt, Item
@@ -28,6 +28,8 @@ def get_id_for_receipt(request):
         if DEBUG:
             print(f"Receipt json string received: {receipt_json_str}")
 
+        ## Alternate way - render the form page with error message
+        '''
         if len(receipt_json_str) == 0:
             # render the form page with error message
             return render(
@@ -39,13 +41,12 @@ def get_id_for_receipt(request):
                 },
                 status=400
         )
+        '''
 
         random_hex_id = get_random_hexadecimal_id()
         # in the (very!) unlikely case of a collision, regenerate the ID until it's unique
         while random_hex_id in Receipt.objects.values_list('hexadecimal_id', flat=True):
             random_hex_id = get_random_hexadecimal_id()
-
-        # TODO: we might also want to add some data validation here
 
         try:
             data = json.loads(receipt_json_str)
@@ -94,7 +95,7 @@ def points(request, receipt_id: str) -> JsonResponse:
         try:
             receipt = Receipt.objects.get(pk=receipt_id)
         except Receipt.DoesNotExist:
-            raise Http404("No receipt found for that ID.")
+            return HttpResponseNotFound("No receipt found for that ID.")
         else:
             return JsonResponse({'points': receipt.get_points()})
     else: # POST used to call this endpoint
