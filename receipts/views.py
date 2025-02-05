@@ -1,6 +1,8 @@
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from .forms import NameForm
+
+from .models import Receipt
 
 import random
 
@@ -53,7 +55,7 @@ def get_receipt(request):
 def points(request, receipt_id: str) -> JsonResponse:
     if request.method == "GET":
         print(f"Receipt json string received: {receipt_id}")
-        a_dict = {'points': 32}
-        return JsonResponse(a_dict)
+        receipt = get_object_or_404(Receipt, pk=receipt_id)
+        return JsonResponse({'points': receipt.get_points()})
     else:
         return HttpResponse("Invalid request method, this can only take GET")
