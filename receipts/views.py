@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import get_object_or_404, render
 
 from .models import Receipt, Item
@@ -65,8 +65,10 @@ def get_id_for_receipt(request):
 
             return JsonResponse({'id': random_hex_id})
         except Exception as e:
-            # render the form page with error message
+            return HttpResponseBadRequest("The receipt is invalid.")
 
+            ## Alternate way - render the form page with error message
+            '''
             return render(
                 request,
                 "receipts/upload_receipt_and_get_id.html",
@@ -76,7 +78,8 @@ def get_id_for_receipt(request):
                 },
                 status=400
             )
-    else:
+            '''
+    else: # GET used to call this endpoint
         return HttpResponseBadRequest("Invalid request method, this can only take POST")
 
 
@@ -88,7 +91,11 @@ def points(request, receipt_id: str) -> JsonResponse:
     if request.method == "GET":
         if DEBUG:
             print(f"Receipt json string received: {receipt_id}")
-        receipt = get_object_or_404(Receipt, pk=receipt_id)
-        return JsonResponse({'points': receipt.get_points()})
-    else: # POST
+        try:
+            receipt = Receipt.objects.get(pk=receipt_id)
+        except Receipt.DoesNotExist:
+            raise Http404("No receipt found for that ID.")
+        else:
+            return JsonResponse({'points': receipt.get_points()})
+    else: # POST used to call this endpoint
         return HttpResponseBadRequest("Invalid request method, this can only take GET")
