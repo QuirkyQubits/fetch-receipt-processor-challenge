@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 
 from .models import Receipt, Item
@@ -33,32 +33,30 @@ def get_id_for_receipt(request):
 
         # TODO: we might also want to add some data validation here
 
-        data = json.loads(receipt_json_str)
+        try:
+            data = json.loads(receipt_json_str)
 
-        retailer = data['retailer']
-        purchaseDate = data['purchaseDate']
-        purchaseTime = data['purchaseTime']
-        total = data['total']
-        items = data['items']
+            retailer = data['retailer']
+            purchaseDate = data['purchaseDate']
+            purchaseTime = data['purchaseTime']
+            total = data['total']
+            items = data['items']
 
-        receipt = Receipt.objects.create(hexadecimal_id=random_hex_id, retailer=retailer, purchaseDate=purchaseDate, purchaseTime=purchaseTime, total=total)
+            receipt = Receipt.objects.create(hexadecimal_id=random_hex_id, retailer=retailer, purchaseDate=purchaseDate, purchaseTime=purchaseTime, total=total)
 
-        for item in items:
-            shortDescription = item['shortDescription']
-            price = item['price']
-            receipt.item_set.create(shortDescription=shortDescription, price=price)
+            for item in items:
+                shortDescription = item['shortDescription']
+                price = item['price']
+                receipt.item_set.create(shortDescription=shortDescription, price=price)
 
-        return JsonResponse({'id': random_hex_id})
+            return JsonResponse({'id': random_hex_id})
+        except Exception as e:
+            return HttpResponseBadRequest("Invalid or malformed JSON.")
     else:
-        return HttpResponse("Invalid request method, this can only take POST")
+        return HttpResponseBadRequest("Invalid request method, this can only take POST")
 
 
 def accept_receipt_as_user_input(request):
-    # we want to redirect, but how?
-    # I'm thinking do an AJAX request within the JavaScript <script tag>
-    # so the front end form will hit the receipts/process API, return the response
-    # return HttpResponseRedirect("/receipts/results") # passing in some id
-
     return render(request, "receipts/upload_receipt_and_get_id.html")
 
 
@@ -68,4 +66,4 @@ def points(request, receipt_id: str) -> JsonResponse:
         receipt = get_object_or_404(Receipt, pk=receipt_id)
         return JsonResponse({'points': receipt.get_points()})
     else: # POST
-        return HttpResponse("Invalid request method, this can only take GET")
+        return HttpResponseBadRequest("Invalid request method, this can only take GET")
