@@ -2,6 +2,7 @@ from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedire
 from django.shortcuts import get_object_or_404, render
 
 from .models import Receipt, Item
+from .settings import DEBUG
 
 import random
 import json
@@ -24,7 +25,8 @@ def get_random_hexadecimal_id() -> str:
 def get_id_for_receipt(request):
     if request.method == "POST":
         receipt_json_str = request.POST['receipt_json_str']
-        print(f"Receipt json string received: {receipt_json_str}")
+        if DEBUG:
+            print(f"Receipt json string received: {receipt_json_str}")
 
         if len(receipt_json_str) == 0:
             # render the form page with error message
@@ -84,7 +86,8 @@ def accept_receipt_as_user_input(request):
 
 def points(request, receipt_id: str) -> JsonResponse:
     if request.method == "GET":
-        print(f"Receipt json string received: {receipt_id}")
+        if DEBUG:
+            print(f"Receipt json string received: {receipt_id}")
         receipt = get_object_or_404(Receipt, pk=receipt_id)
         return JsonResponse({'points': receipt.get_points()})
     else: # POST

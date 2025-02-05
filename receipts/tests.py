@@ -309,6 +309,31 @@ class ReceiptViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
+    def test_points_api_with_post_throws_error(self):
+        '''
+        Test that hitting the points api with POST is not ok and returns 400.
+        '''
+
+        json_string = '''
+        {
+            "retailer": "",
+            "purchaseDate": "2022-01-02",
+            "purchaseTime": "18:13",
+            "total": "2.65",
+            "items": [
+                {"shortDescription": "Pepsi - 12-oz", "price": "1.25"},
+                {"shortDescription": "Dasani", "price": "1.40"}
+            ]
+        }
+        '''
+
+        url = reverse("receipts:points", args=('c288fc46-3b6-8b4c-830d-77c75e9644e6',))
+        post_dict = {'receipt_json_str': json_string}
+        response = self.client.post(url, post_dict)
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, "Invalid request method, this can only take GET", status_code=400)
+
+
     def test_create_receipt_then_call_points_api_on_its_id(self):
         '''
         Test that calling receipts/points returns 404 for unknown id,
