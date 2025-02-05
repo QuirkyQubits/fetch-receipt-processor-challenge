@@ -6,7 +6,8 @@
     {% csrf_token %}
     <label for="receipt_json_str">Input the receipt json string: </label>
     <br/>
-    <input id="receipt_json_str" type="text" name="receipt_json_str">
+    <textarea id="receipt_json_str" type="text" name="receipt_json_str"></textarea>
+    <br/>
     <input type="submit" value="Submit">
     {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
     {% if error_message %}<p><strong>{{ receipt_json_str }}</strong></p>{% endif %}

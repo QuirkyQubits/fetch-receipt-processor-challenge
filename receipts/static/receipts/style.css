@@ -2,3 +2,9 @@ p {
     white-space: pre-line;
     color: red;
 }
+
+#receipt_json_str {
+    resize: horizontal;
+    width: 1000px;
+    height: 300px;
+}
