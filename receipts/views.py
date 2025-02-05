@@ -1,10 +1,10 @@
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
-from .forms import NameForm
 
-from .models import Receipt
+from .models import Receipt, Item
 
 import random
+import json
 
 '''
 def index(request):
@@ -23,33 +23,43 @@ def get_random_hexadecimal_id() -> str:
 
 def get_id_for_receipt(request):
     if request.method == "POST":
-        # print(f"Receipt json string received: {receipt_json_str}")
-        a_dict = {'id': get_random_hexadecimal_id()}
-        return JsonResponse(a_dict)
+        receipt_json_str = request.POST['receipt_json_str']
+        print(f"Receipt json string received: {receipt_json_str}")
+
+        random_hex_id = get_random_hexadecimal_id()
+        # in the (very!) unlikely case of a collision, regenerate the ID until it's unique
+        while random_hex_id in Receipt.objects.values_list('hexadecimal_id', flat=True):
+            random_hex_id = get_random_hexadecimal_id()
+
+        # TODO: we might also want to add some data validation here
+
+        data = json.loads(receipt_json_str)
+
+        retailer = data['retailer']
+        purchaseDate = data['purchaseDate']
+        purchaseTime = data['purchaseTime']
+        total = data['total']
+        items = data['items']
+
+        receipt = Receipt.objects.create(hexadecimal_id=random_hex_id, retailer=retailer, purchaseDate=purchaseDate, purchaseTime=purchaseTime, total=total)
+
+        for item in items:
+            shortDescription = item['shortDescription']
+            price = item['price']
+            receipt.item_set.create(shortDescription=shortDescription, price=price)
+
+        return JsonResponse({'id': random_hex_id})
     else:
         return HttpResponse("Invalid request method, this can only take POST")
 
 
-def get_receipt(request):
-    # if this is a POST request we need to process the form data
-    if request.method == "POST":
-        # create a form instance and populate it with data from the request:
-        form = NameForm(request.POST)
-        # check whether it's valid:
-        if form.is_valid():
-            # process the data in form.cleaned_data as required
-            # ...
-            # redirect to a new URL:
+def accept_receipt_as_user_input(request):
+    # we want to redirect, but how?
+    # I'm thinking do an AJAX request within the JavaScript <script tag>
+    # so the front end form will hit the receipts/process API, return the response
+    # return HttpResponseRedirect("/receipts/results") # passing in some id
 
-            print("POST request and Form is valid!")
-
-            return HttpResponseRedirect("/receipts/results") # passing in some id
-
-    # if a GET (or any other method) we'll create a blank form
-    else:
-        form = NameForm()
-
-    return render(request, "receipts/upload_receipt_and_get_id.html", {"form": form})
+    return render(request, "receipts/upload_receipt_and_get_id.html")
 
 
 def points(request, receipt_id: str) -> JsonResponse:
@@ -57,5 +67,5 @@ def points(request, receipt_id: str) -> JsonResponse:
         print(f"Receipt json string received: {receipt_id}")
         receipt = get_object_or_404(Receipt, pk=receipt_id)
         return JsonResponse({'points': receipt.get_points()})
-    else:
+    else: # POST
         return HttpResponse("Invalid request method, this can only take GET")

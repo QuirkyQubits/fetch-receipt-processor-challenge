@@ -5,7 +5,7 @@ from . import views
 app_name = "receipts"
 urlpatterns = [
     # ex: /receipts/
-    path("", views.get_receipt, name="get_receipt"),
+    path("", views.accept_receipt_as_user_input, name="accept_receipt_as_user_input"),
 
     # ex: /receipts/process/
     path("process", views.get_id_for_receipt, name="get_id_for_receipt"),
