@@ -26,6 +26,18 @@ def get_id_for_receipt(request):
         receipt_json_str = request.POST['receipt_json_str']
         print(f"Receipt json string received: {receipt_json_str}")
 
+        if len(receipt_json_str) == 0:
+            # render the form page with error message
+            return render(
+                request,
+                "receipts/upload_receipt_and_get_id.html",
+                {
+                    "receipt_json_str": receipt_json_str,
+                    "error_message": "Form error - You didn't select a choice.",
+                },
+                status=400
+        )
+
         random_hex_id = get_random_hexadecimal_id()
         # in the (very!) unlikely case of a collision, regenerate the ID until it's unique
         while random_hex_id in Receipt.objects.values_list('hexadecimal_id', flat=True):
@@ -51,7 +63,17 @@ def get_id_for_receipt(request):
 
             return JsonResponse({'id': random_hex_id})
         except Exception as e:
-            return HttpResponseBadRequest("Invalid or malformed JSON.")
+            # render the form page with error message
+
+            return render(
+                request,
+                "receipts/upload_receipt_and_get_id.html",
+                {
+                    "receipt_json_str": receipt_json_str,
+                    "error_message": "Form error - The JSON was malformed or invalid. JSON string received:",
+                },
+                status=400
+            )
     else:
         return HttpResponseBadRequest("Invalid request method, this can only take POST")
 
