@@ -7,10 +7,6 @@ from .settings import DEBUG
 import random
 import json
 
-'''
-def index(request):
-    return HttpResponse("Hello, world. You're at the polls index.")
-'''
 
 def get_random_hexadecimal_id() -> str:
     randint_1 = random.randint(0, 16**8-1)
