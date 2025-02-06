@@ -67,8 +67,8 @@ class Receipt(models.Model):
 
 class Item(models.Model):
     receipt = models.ForeignKey(Receipt, on_delete=models.CASCADE)
-    shortDescription = models.CharField(max_length=100)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    shortDescription = models.CharField(max_length=1000)
+    price = models.DecimalField(max_digits=1000, decimal_places=2)
 
     def __str__(self):
         return f"{self.shortDescription} - {self.price} - {self.receipt.hexadecimal_id}"

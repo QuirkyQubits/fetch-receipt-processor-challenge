@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.utils import timezone
 from django.urls import reverse
 
-from .models import Receipt
+from .models import Receipt, Item
 
 
 INVALID_RECEIPT_BAD_REQUEST_STR = "The receipt is invalid."
@@ -27,6 +27,10 @@ def create_receipt_with_day_offset(days: int):
     )
 
 
+def create_item_with_price(receipt: Receipt, price: float):
+    return Item.objects.create(receipt=receipt, shortDescription='test-short-description', price=price)
+
+
 class ReceiptModelTests(TestCase):
     def test_creation_of_future_receipt_is_ok(self):
         """
@@ -42,6 +46,42 @@ class ReceiptModelTests(TestCase):
         time = timezone.now() + datetime.timedelta(days=30)
         future_receipt = create_receipt_with_day_offset(30)
         self.assertIs(future_receipt.hexadecimal_id == 'test-hex-id', True)
+
+
+class ItemModelTests(TestCase):
+    def test_floating_point_precision_for_more_than_2_decimal_places_item(self):
+        '''
+        Test creating Receipts with Items that have a price with > 2 decimal points.
+        It seems like Django's DecimalField "decimal_places" doesn't self-enforce
+        when directly created with the raw Model class constructor,
+        and the raw float value is stored in the table regardless of how many decimal places it has.
+
+        Let's make an assumption to permit this for now, because there isn't much information
+        about what the value gained from writing a lot of logic to validate decimal places is,
+        such as what the concrete needs of our application are.
+
+        However, if necessary, modify this unit test to reflect any logic needed to validate
+        decimal places, e.g. if we want to send a 400 bad request if the input has > 2 decimal places.
+        '''
+
+        ''' Example:
+            "items": [
+                {"shortDescription": "Pepsi - 12-oz", "price": "1.255"},
+                {"shortDescription": "Dasani", "price": "1.403"},
+                {"shortDescription": "Coke", "price": "1.999"}
+            ]
+        '''
+
+        receipt = create_receipt_with_day_offset(0)
+
+        item = create_item_with_price(receipt, 1.255)
+        self.assertEqual(item.price, 1.255)
+
+        item = create_item_with_price(receipt, 1.403)
+        self.assertEqual(item.price, 1.403)
+
+        item = create_item_with_price(receipt, -99.999)
+        self.assertEqual(item.price, -99.999)
 
 
 class ReceiptViewTests(TestCase):
@@ -69,7 +109,44 @@ class ReceiptViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "\"id\":")
         self.assertNotContains(response, INVALID_RECEIPT_BAD_REQUEST_STR, status_code=200)
-        
+    
+
+    def test_floating_point_precision_for_more_than_2_decimal_places_receipt_total(self):
+        '''
+        Test that Receipts with Items that have a price with > 2 decimal points
+        and a total with > 2 decimal points have those values rounded.
+        '''
+
+        json_string = '''
+        {
+            "retailer": "Walgreens",
+            "purchaseDate": "2022-01-02",
+            "purchaseTime": "08:13",
+            "total": "2.6592568",
+            "items": [
+                {"shortDescription": "Pepsi - 12-oz", "price": "1.255"},
+                {"shortDescription": "Dasani", "price": "1.403"},
+                {"shortDescription": "Coke", "price": "1.999"},
+                {"shortDescription": "Softdrink", "price": "-99.9999999"}
+            ]
+        }
+        '''
+
+        url = reverse("receipts:get_id_for_receipt")
+        post_dict = {'receipt_json_str': json_string}
+        response = self.client.post(url, post_dict)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "\"id\":")
+        self.assertNotContains(response, INVALID_RECEIPT_BAD_REQUEST_STR, status_code=200)
+
+        the_json = json.loads(response.content.decode("utf-8"))
+        hex_id = the_json['id']
+        receipt = Receipt.objects.get(hexadecimal_id=hex_id)
+
+        self.assertEqual(str(receipt.total), "2.66")
+        for item in receipt.item_set.all():
+            self.assertTrue(str(item.price) in {"1.26", "1.40", "2.00", "-100.00"})
+
 
     def test_sending_receipts_with_negative_price_items_to_receipt_process_view_is_fine(self):
         '''
