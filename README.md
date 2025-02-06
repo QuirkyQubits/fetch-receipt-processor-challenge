@@ -12,6 +12,7 @@ In order to run the code in this repo, follow these steps:
 1. Clone the repo
 
 git clone https://github.com/cerulea/fetch-receipt-processor-challenge
+
 cd fetch-receipt-processor-challenge
 
 2. Build the Docker image (step 3)
@@ -36,7 +37,9 @@ docker run -p 8000:8000 -e DJANGO_SUPERUSER_USERNAME=admin \
                            fetch-receipt-processor-app python manage.py createsuperuser --noinput
 
 Now, when navigating to the admin console, you can log in with credentials
+
 username: admin
+
 pwd: FetchReceipt
 
 The admin console is at http://127.0.0.1:8000/admin, and you can click on items, receipts, etc.
@@ -62,24 +65,36 @@ into the {id} field to get the points associated with the receipt.
 5. How to stop the Django server / Docker container
 
 Run docker ps, grab the ID of the running container labeled in column "CONTAINER ID":
+
 docker stop <id>
+
 docker rm <id>
+
 Now, docker ps -a should not show that Docker container!
 
 --- Additional notes for local development only ---
 
 (local development only) Activate the venv before doing anything.
+
 source ./.virtualenvs/djangodev/Scripts/activate
+
 (You can use powershell, git bash, or another CLI)
 
 To access the admin portal:
+
 <user/email/password for this app>
+
 user: admin
+
 email: admin@example.com
+
 password: FetchReceipt
 
+
 To run this locally, (no Docker):
+
 Start the server with:
+
 python manage.py runserver
 
-and then navigate to the URLs shown above
+and then navigate to the URLs shown above.
