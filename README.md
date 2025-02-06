@@ -34,28 +34,35 @@ docker build -t fetch-receipt-processor-app .
 
 3. Run the Dockerized Django app
 
-docker run -p 8000:8000 fetch-receipt-processor-app
-
-Or, to run in detached mode so Django's server doesn't take over terminal output (prevents terminal lock):
-
-docker run -d -p 8000:8000 fetch-receipt-processor-app
+docker run -d -p 8000:8000 --name my_django_app fetch-receipt-processor-app
 
 3.1. (Optional) Access Django's admin console:
 
-If the user wants to access the Django admin (to see all in-memory objects and/or manipulate them), they must create a superuser inside the running container:
+If the user wants to access the Django admin (to see all in-memory objects and/or manipulate them), they must create a superuser inside the running container. Follow these steps:
 
-docker run -p 8000:8000 -e DJANGO_SUPERUSER_USERNAME=admin \\
-                           -e DJANGO_SUPERUSER_EMAIL=admin@example.com \\
-                           -e DJANGO_SUPERUSER_PASSWORD=FetchReceipt \\
-                           fetch-receipt-processor-app python manage.py createsuperuser --noinput
+First, ensure the database schema is set:
 
-Now, when navigating to the admin console, you can log in with credentials
+docker exec -it my_django_app python manage.py migrate --noinput  
+
+Next, create a superuser:
+
+docker exec -it my_django_app python manage.py createsuperuser
+
+This will prompt you to enter a username,email, and password. Enter
+
+username=admin
+
+email=admin@example.com
+
+pwd=FetchReceipt
+
+Now, navigate to the admin console at http://127.0.0.1:8000/admin, you can log in with credentials
 
 username: admin
 
 pwd: FetchReceipt
 
-The admin console is at http://127.0.0.1:8000/admin, and you can click on items, receipts, etc.
+You can click on items, receipts, etc. and add or remove them all from the admin console!
 
 4. Navigate to http://127.0.0.1:8000/receipts
 
