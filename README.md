@@ -1,11 +1,24 @@
 # fetch-receipt-processor-challenge
 
+This Github repo is a submission of the challenge described in 
+
+https://github.com/fetch-rewards/receipt-processor-challenge
+
+In short, this backend project implements a receipt application, where users can upload receipts to a Process API and get an id representing a key to access that receipt, then use the id as an argument to a Points API
+that will return how many points that particular receipt is worth according to the app's rules.
+
+See https://github.com/fetch-rewards/receipt-processor-challenge/blob/main/api.yml
+
+for detailed specs of the two major APIs (Process and Points) that were implemented, and 
+
+https://github.com/fetch-rewards/receipt-processor-challenge/tree/main/examples
+
+for examples of valid receipts, which can help you make calls to the Process API that have the correct JSON structure.
+
 This project includes a Dockerized setup, so you don't need to install Python/Django.
-You must have Docker installed, however.
+You must have Git/Docker installed, however.
 
 --- For the end user ---
-
-(You must have Docker installed beforehand)
 
 In order to run the code in this repo, follow these steps:
 
@@ -15,11 +28,11 @@ git clone https://github.com/cerulea/fetch-receipt-processor-challenge
 
 cd fetch-receipt-processor-challenge
 
-2. Build the Docker image (step 3)
+2. Build the Docker image
 
 docker build -t fetch-receipt-processor-app .
 
-3. Run the Dockerized Django app (step 4)
+3. Run the Dockerized Django app
 
 docker run -p 8000:8000 fetch-receipt-processor-app
 
@@ -27,7 +40,7 @@ Or, to run in detached mode so Django's server doesn't take over terminal output
 
 docker run -d -p 8000:8000 fetch-receipt-processor-app
 
-Note (optional, to use Django's admin console):
+3.1. (Optional) Access Django's admin console:
 
 If the user wants to access the Django admin (to see all in-memory objects and/or manipulate them), they must create a superuser inside the running container:
 
@@ -64,7 +77,7 @@ into the {id} field to get the points associated with the receipt.
 
 5. How to stop the Django server / Docker container
 
-Run docker ps, grab the ID of the running container labeled in column "CONTAINER ID":
+docker ps  # copy the ID of the running container labeled in column "CONTAINER ID", let's call it <id>:
 
 docker stop <id>
 
