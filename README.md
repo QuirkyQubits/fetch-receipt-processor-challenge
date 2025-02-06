@@ -16,13 +16,13 @@ https://github.com/fetch-rewards/receipt-processor-challenge/tree/main/examples
 for examples of valid receipts, which can help you make calls to the Process API that have the correct JSON structure.
 
 This project includes a Dockerized setup, so you don't need to install Python/Django.
-You must have Git/Docker installed, however.
+You must have Docker installed, however.
 
 --- For the end user ---
 
 In order to run the code in this repo, follow these steps:
 
-1. Clone the repo
+1. Clone the repo, or just download it as a ZIP file
 
 git clone https://github.com/cerulea/fetch-receipt-processor-challenge
 
@@ -44,9 +44,9 @@ docker run -d -p 8000:8000 fetch-receipt-processor-app
 
 If the user wants to access the Django admin (to see all in-memory objects and/or manipulate them), they must create a superuser inside the running container:
 
-docker run -p 8000:8000 -e DJANGO_SUPERUSER_USERNAME=admin \
-                           -e DJANGO_SUPERUSER_EMAIL=admin@example.com \
-                           -e DJANGO_SUPERUSER_PASSWORD=FetchReceipt \
+docker run -p 8000:8000 -e DJANGO_SUPERUSER_USERNAME=admin \\
+                           -e DJANGO_SUPERUSER_EMAIL=admin@example.com \\
+                           -e DJANGO_SUPERUSER_PASSWORD=FetchReceipt \\
                            fetch-receipt-processor-app python manage.py createsuperuser --noinput
 
 Now, when navigating to the admin console, you can log in with credentials
@@ -77,11 +77,11 @@ into the {id} field to get the points associated with the receipt.
 
 5. How to stop the Django server / Docker container
 
-docker ps  # copy the ID of the running container labeled in column "CONTAINER ID", let's call it <id>:
+docker ps  # copy the ID of the running container labeled in column "CONTAINER ID", let's call it \<id\>:
 
-docker stop <id>
+docker stop \<id\>
 
-docker rm <id>
+docker rm \<id\>
 
 Now, docker ps -a should not show that Docker container!
 
