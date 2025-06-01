@@ -1,120 +1,120 @@
-# fetch-receipt-processor-challenge
+# 🧾 fetch-receipt-processor-challenge
 
-This Github repo is a submission of the challenge described in 
-
+This GitHub repo is a submission for the challenge described at:  
 https://github.com/fetch-rewards/receipt-processor-challenge
 
-In short, this backend project implements a receipt application, where users can upload receipts to a Process API and get an id representing a key to access that receipt, then use the id as an argument to a Points API
-that will return how many points that particular receipt is worth according to the app's rules.
+This Django backend project implements a receipt application where users can:
 
-See https://github.com/fetch-rewards/receipt-processor-challenge/blob/main/api.yml
+- Upload receipts to the **Process API** to get a unique ID
+- Use that ID with the **Points API** to retrieve how many points the receipt is worth
 
-for detailed specs of the two major APIs (Process and Points) that were implemented, and 
+See the detailed API specification:  
+https://github.com/fetch-rewards/receipt-processor-challenge/blob/main/api.yml
 
+See valid receipt examples:  
 https://github.com/fetch-rewards/receipt-processor-challenge/tree/main/examples
 
-for examples of valid receipts, which can help you make calls to the Process API that have the correct JSON structure.
+This project includes a Dockerized setup, so you don't need to install Python or Django manually.  
+However, **Docker must be installed** on your system.
 
-This project includes a Dockerized setup, so you don't need to install Python/Django.
-You must have Docker installed, however.
+---
 
---- For the end user ---
+## 🛠️ How to Run (End Users)
 
-In order to run the code in this repo, follow these steps:
+### 1. Clone the Repo
 
-1. Clone the repo, or just download it as a ZIP file
-
+```bash
 git clone https://github.com/cerulea/fetch-receipt-processor-challenge
-
 cd fetch-receipt-processor-challenge
+```
 
-2. Build the Docker image
+### 2. Build the Docker Image
 
+```bash
 docker build -t fetch-receipt-processor-app .
+```
 
-3. Run the Dockerized Django app
+### 3. Run the Dockerized Django App
 
+```bash
 docker run -d -p 8000:8000 --name my_django_app fetch-receipt-processor-app
+```
 
-3.1. (Optional) Access Django's admin console:
+### 3.1 (Optional) Access Django Admin Console
 
-If the user wants to access the Django admin (to see all in-memory objects and/or manipulate them), they must create a superuser inside the running container. Follow these steps:
+#### Apply migrations:
 
-First, ensure the database schema is set:
+```bash
+docker exec -it my_django_app python manage.py migrate --noinput
+```
 
-docker exec -it my_django_app python manage.py migrate --noinput  
+#### Create a superuser:
 
-Next, create a superuser:
-
+```bash
 docker exec -it my_django_app python manage.py createsuperuser
+```
 
-This will prompt you to enter a username,email, and password. Enter
+Enter:
 
-username=admin
+- Username: `admin`
+- Email: `admin@example.com`
+- Password: `FetchReceipt`
 
-email=admin@example.com
+Now visit [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) to log in and view/edit data.
 
-pwd=FetchReceipt
+---
 
-Now, navigate to the admin console at http://127.0.0.1:8000/admin, you can log in with credentials
+## 🌐 Using the API
 
-username: admin
+### Submit a Receipt
 
-pwd: FetchReceipt
+Navigate to:  
+[http://127.0.0.1:8000/receipts](http://127.0.0.1:8000/receipts)
 
-You can click on items, receipts, etc. and add or remove them all from the admin console!
+Submit a valid JSON string via the form to `/receipts/process`. This returns a receipt ID.
 
-4. Navigate to http://127.0.0.1:8000/receipts
+> ⚠️ Directly accessing `/receipts/process` in a browser results in a 400 error.  
+> Use the form or send a POST request via cURL/Postman.
 
-In http://127.0.0.1:8000/receipts, there is a form allowing you to submit a string (formatted as JSON)
-to http://127.0.0.1:8000/receipts/process. The receipts/process endpoint will return a randomly-generated id
-of the receipt that was created if receipt creation succeeds.
+### Get Points from Receipt
 
-If you try to access http://127.0.0.1:8000/receipts/process by itself using browser, you will get a 400 error.
-This is because the recceipts/process endpoint only takes POST arguments,
-so you either have to hit it by using the form at http://127.0.0.1:8000/receipts
-or maually constructing a POST request using something like cURL / Postman to hit the receipts/process endpoint.
+Navigate to:  
+`http://127.0.0.1:8000/receipts/{id}/points`  
+Replace `{id}` with the actual receipt ID returned by the process endpoint.
 
-The points API is at http://127.0.0.1:8000/receipts/{id}/points, where given the id of a Receipt,
-this API endpoint will return the number of points associated with that receipt.
-It requires a GET request, so can be accessed in the browser by default.
+You can open this in a browser to retrieve the points total.
 
-It may be useful to open receipts/{id}/points in another tab, and just copy/paste the output of receipts/process
-into the {id} field to get the points associated with the receipt.
+---
 
-5. How to stop the Django server / Docker container
+## 🛑 Stopping and Removing the Docker Container
 
-docker ps  # copy the ID of the running container labeled in column "CONTAINER ID", let's call it \<id\>:
+```bash
+docker ps       # Get <container_id>
+docker stop <container_id>
+docker rm <container_id>
+docker ps -a    # Confirm container is removed
+```
 
-docker stop \<id\>
+---
 
-docker rm \<id\>
+## 🧪 Local Development (Optional, Without Docker)
 
-Now, docker ps -a should not show that Docker container!
+Activate the virtual environment:
 
---- Additional notes for local development only ---
-
-(local development only) Activate the venv before doing anything.
-
+```bash
 source ./.virtualenvs/djangodev/Scripts/activate
+```
 
-(You can use powershell, git bash, or another CLI)
+Start the server:
 
-To access the admin portal:
-
-<user/email/password for this app>
-
-user: admin
-
-email: admin@example.com
-
-password: FetchReceipt
-
-
-To run this locally, (no Docker):
-
-Start the server with:
-
+```bash
 python manage.py runserver
+```
 
-and then navigate to the URLs shown above.
+Admin credentials:
+
+- User: `admin`
+- Email: `admin@example.com`
+- Password: `FetchReceipt`
+
+Visit the same API URLs as listed above.
