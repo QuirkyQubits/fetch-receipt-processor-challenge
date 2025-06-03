@@ -97,6 +97,14 @@ docker ps -a    # Confirm container is removed
 
 ---
 
+## 🔍 API Behavior and Edge Case Coverage
+
+All core API logic and edge cases are covered in the test suite. This includes validation, error responses, and formatting edge cases.
+
+See: [tests.py](https://github.com/QuirkyQubits/fetch-receipt-processor-challenge/blob/main/receipts/tests.py)
+
+---
+
 ## 🧪 Local Development (Optional, Without Docker)
 
 Activate the virtual environment:
